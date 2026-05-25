@@ -1,9 +1,95 @@
+.start-screen {
+  width: min(1180px, calc(100% - 20px));
+  min-height: auto;
+  margin: 16px auto;
+  padding: clamp(18px, 4vw, 34px);
+  align-content: start;
+  justify-items: stretch;
+  gap: 14px;
+  border: 1px solid rgba(42, 212, 199, 0.18);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(42, 212, 199, 0.09), transparent 42%),
+    rgba(8, 18, 31, 0.72);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
+}
+
+.start-screen .brand-row {
+  justify-content: space-between;
+}
+
+.start-screen h1 {
+  max-width: 780px;
+  font-size: clamp(2.2rem, 6vw, 4.6rem);
+}
+
+.start-screen .muted {
+  max-width: 760px;
+  font-size: 1.02rem;
+  line-height: 1.55;
+}
+
+.home-intro {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.home-intro-card {
+  min-height: 118px;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--line-soft);
+  background: rgba(7, 17, 31, 0.78);
+}
+
+.home-intro-card span {
+  display: block;
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.home-intro-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: clamp(1.35rem, 3vw, 2.2rem);
+}
+
+.home-intro-card p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.start-actions {
+  display: grid;
+  grid-template-columns: minmax(210px, 1.2fr) repeat(4, minmax(150px, 1fr));
+  width: 100%;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line-soft);
+  background: rgba(7, 17, 31, 0.62);
+}
+
+.start-actions > * {
+  justify-content: center;
+  min-height: 48px;
+}
+
+.start-actions .primary-action {
+  font-size: 1rem;
+}
+
 .learning-dashboard {
   display: grid;
-  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
-  width: min(980px, 100%);
-  margin: 8px 0 16px;
+  width: 100%;
+  margin: 0;
 }
 
 .learning-dashboard:empty {
@@ -20,6 +106,7 @@
 
 .dashboard-card.wide {
   grid-column: 1 / -1;
+  min-height: 76px;
 }
 
 .dashboard-card span {
@@ -75,7 +162,7 @@
 }
 
 .study-shell {
-  width: min(1180px, 100%);
+  width: 100%;
   margin: 18px 0;
 }
 
@@ -127,7 +214,7 @@
 
 .theme-chart,
 .revision-panel {
-  width: min(1180px, 100%);
+  width: 100%;
   margin: 12px 0;
   padding: 14px;
   border-radius: 8px;
@@ -329,22 +416,28 @@
 }
 
 @media (max-width: 980px) {
+  .home-intro,
+  .start-actions,
   .learning-dashboard {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .start-actions .primary-action {
+    grid-column: 1 / -1;
   }
 }
 
 @media (max-width: 660px) {
+  .start-screen {
+    width: calc(100% - 12px);
+    margin: 6px auto;
+    padding: 16px;
+  }
+
+  .home-intro,
+  .start-actions,
   .learning-dashboard {
     grid-template-columns: 1fr;
-  }
-
-  .history-row {
-    grid-template-columns: 1fr;
-  }
-
-  .delete-history {
-    width: 100%;
   }
 
   .chart-row {
