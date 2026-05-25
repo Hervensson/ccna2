@@ -74,6 +74,57 @@
   grid-template-columns: minmax(150px, 1fr) minmax(110px, 180px) minmax(90px, auto) auto;
 }
 
+.study-shell {
+  width: min(1180px, 100%);
+  margin: 18px 0;
+}
+
+.study-nav {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--line-soft);
+  background: rgba(7, 17, 31, 0.94);
+  backdrop-filter: blur(12px);
+}
+
+.study-nav button {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  color: var(--muted);
+  background: transparent;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.study-nav button.active {
+  color: #07111f;
+  background: var(--accent);
+}
+
+.study-page {
+  display: none;
+}
+
+.study-page.active {
+  display: block;
+}
+
+.study-page > .score-board,
+.study-page > .theme-stats,
+.study-page > .history-panel {
+  width: 100%;
+  margin: 0 0 12px;
+}
+
 .theme-chart,
 .revision-panel {
   width: min(1180px, 100%);
@@ -165,7 +216,14 @@
   background: rgba(14, 22, 36, 0.82);
 }
 
-.revision-card span {
+.revision-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.revision-card-head span {
   display: block;
   color: var(--accent);
   font-size: 0.76rem;
@@ -173,10 +231,30 @@
   text-transform: uppercase;
 }
 
+.revision-card-head em {
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: var(--warn);
+  background: rgba(255, 204, 102, 0.1);
+  font-size: 0.74rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
 .revision-card strong {
   display: block;
   margin-top: 8px;
   line-height: 1.35;
+}
+
+.revision-card details {
+  margin: 10px 0;
+}
+
+.revision-card summary {
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 900;
 }
 
 .revision-card p {
@@ -286,5 +364,9 @@
 
   .revision-grid {
     grid-template-columns: 1fr;
+  }
+
+  .study-shell {
+    margin-top: 12px;
   }
 }
