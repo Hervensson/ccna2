@@ -17,6 +17,14 @@
     }
   };
 
+  const write = (key, value) => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch {
+      // Ignore storage failures.
+    }
+  };
+
   const difficultIds = () => read(keys.difficult, []).filter((id) => byId.has(id));
   const lastErrors = () => read(keys.errors, []).filter((id) => byId.has(id));
   const history = () => read(keys.history, []);
@@ -61,6 +69,32 @@
       <div class="dashboard-card"><span>À refaire</span><strong>${lastErrors().length}</strong></div>
       <div class="dashboard-card"><span>Difficiles</span><strong>${difficultIds().length}</strong></div>
     `;
+  }
+
+  function deleteHistoryEntry(id) {
+    write(keys.history, history().filter((entry) => entry.id !== id));
+    renderDashboard();
+    renderEnhancedHistory();
+  }
+
+  function renderEnhancedHistory() {
+    document.querySelectorAll(".history-panel").forEach((panel) => {
+      const entries = history();
+      [...panel.querySelectorAll(".history-row")].forEach((row, index) => {
+        if (row.querySelector(".delete-history")) return;
+        const entry = entries[index];
+        if (!entry) return;
+        const button = document.createElement("button");
+        button.className = "delete-history";
+        button.type = "button";
+        button.textContent = "Supprimer";
+        button.addEventListener("click", () => {
+          deleteHistoryEntry(entry.id);
+          row.remove();
+        });
+        row.append(button);
+      });
+    });
   }
 
   function startIds(ids) {
@@ -114,4 +148,5 @@
   renderDashboard();
   bindStartButtons();
   bindImageZoom();
+  renderEnhancedHistory();
 })();
