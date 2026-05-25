@@ -13,7 +13,7 @@
     { label: "EtherChannel", tests: ["etherchannel", "lacp", "pagp"] },
     { label: "WLAN", tests: ["wlan", "sans fil", "wireless"] },
     { label: "Routage IPv6", tests: ["ipv6", "routage"] },
-    { label: "S\u00e9curit\u00e9 LAN", tests: ["securite", "securite lan", "port security", "dhcp snooping"] },
+    { label: "Securite LAN", tests: ["securite", "securite lan", "port security", "dhcp snooping"] },
   ];
 
   const read = (key, fallback) => {
@@ -217,6 +217,87 @@
     return panel;
   }
 
+  function placeInPanel(panel, ...items) {
+    if (!panel) return;
+    items.filter(Boolean).forEach((item) => {
+      if (item.parentElement !== panel) panel.append(item);
+    });
+  }
+
+  function setupTabbedArea(id, anchorSelector, tabs, defaultTab) {
+    let shell = document.querySelector(`#${id}`);
+    if (!shell) {
+      const anchor = document.querySelector(anchorSelector);
+      if (!anchor) return null;
+      shell = document.createElement("section");
+      shell.id = id;
+      shell.className = "study-shell";
+      shell.innerHTML = `
+        <nav class="study-nav" aria-label="Navigation des revisions">
+          ${tabs.map((tab) => `<button type="button" data-study-tab="${tab.id}">${tab.label}</button>`).join("")}
+        </nav>
+        <div class="study-pages">
+          ${tabs.map((tab) => `<section id="${id}-${tab.id}" class="study-page"></section>`).join("")}
+        </div>
+      `;
+      anchor.insertAdjacentElement("afterend", shell);
+      shell.querySelectorAll("[data-study-tab]").forEach((button) => {
+        button.addEventListener("click", () => setActiveTab(shell, button.dataset.studyTab));
+      });
+    }
+    setActiveTab(shell, shell.dataset.active || defaultTab || tabs[0]?.id);
+    return shell;
+  }
+
+  function setActiveTab(shell, tabId) {
+    if (!shell) return;
+    shell.dataset.active = tabId;
+    shell.querySelectorAll("[data-study-tab]").forEach((button) => {
+      button.classList.toggle("active", button.dataset.studyTab === tabId);
+    });
+    shell.querySelectorAll(".study-page").forEach((page) => {
+      page.classList.toggle("active", page.id.endsWith(`-${tabId}`));
+    });
+  }
+
+  function organizeHome() {
+    const shell = setupTabbedArea("homeStudyShell", ".start-actions", [
+      { id: "overview", label: "Accueil" },
+      { id: "progress", label: "Progression" },
+      { id: "cards", label: "Fiches" },
+      { id: "history", label: "Historique" },
+    ], "overview");
+    if (!shell) return;
+    placeInPanel(document.querySelector("#homeStudyShell-overview"), document.querySelector("#learningDashboard"));
+    placeInPanel(document.querySelector("#homeStudyShell-progress"), document.querySelector("#themeChartStart"));
+    placeInPanel(document.querySelector("#homeStudyShell-cards"), document.querySelector("#revisionCardsStart"));
+    placeInPanel(document.querySelector("#homeStudyShell-history"), document.querySelector("#startHistory"));
+  }
+
+  function organizeResults() {
+    const shell = setupTabbedArea("resultStudyShell", ".result-header", [
+      { id: "correction", label: "Correction" },
+      { id: "progress", label: "Progression" },
+      { id: "cards", label: "Fiches" },
+      { id: "history", label: "Historique" },
+    ], "correction");
+    if (!shell) return;
+    placeInPanel(
+      document.querySelector("#resultStudyShell-correction"),
+      document.querySelector("#scoreBoard"),
+      document.querySelector(".result-tabs"),
+      document.querySelector("#resultsList"),
+    );
+    placeInPanel(
+      document.querySelector("#resultStudyShell-progress"),
+      document.querySelector("#globalStats"),
+      document.querySelector("#themeChartResult"),
+      document.querySelector("#themeStats"),
+    );
+    placeInPanel(document.querySelector("#resultStudyShell-cards"), document.querySelector("#revisionCardsResult"));
+    placeInPanel(document.querySelector("#resultStudyShell-history"), document.querySelector("#historyPanel"));
+  }
+
   function chartHtml(rows) {
     const goal = scoreGoal();
     return `
@@ -274,7 +355,7 @@
   }
 
   function revisionCardsHtml() {
-    const ids = [...new Set([...lastErrors(), ...difficultIds()])].filter((id) => byId.has(id)).slice(0, 8);
+    const ids = [...new Set([...lastErrors(), ...difficultIds()])].filter((id) => byId.has(id)).slice(0, 4);
     if (!ids.length) {
       return `
         <h2 class="section-title">Fiches de revision</h2>
@@ -289,9 +370,15 @@
           const fav = difficultIds().includes(id);
           return `
             <article class="revision-card">
-              <span>${escapeHtml(question.theme || "CCNA")}</span>
+              <div class="revision-card-head">
+                <span>${escapeHtml(question.theme || "CCNA")}</span>
+                <em>${fav ? "Favori" : "Erreur"}</em>
+              </div>
               <strong>${escapeHtml(question.question)}</strong>
-              <p>${escapeHtml(correctAnswerText(question) || question.explanation || "Revise la correction complete dans tes resultats.")}</p>
+              <details>
+                <summary>Voir la fiche</summary>
+                <p>${escapeHtml(correctAnswerText(question) || question.explanation || "Revise la correction complete dans tes resultats.")}</p>
+              </details>
               <div>
                 <button type="button" data-review="${id}">Reviser</button>
                 <button type="button" data-favorite="${id}" class="${fav ? "active" : ""}">${fav ? "Favori" : "Ajouter favori"}</button>
@@ -359,6 +446,8 @@
     renderRevisionCards();
     addSectionTitle(document.querySelector("#themeStats"), "Cette session par theme");
     renderEnhancedHistory();
+    organizeHome();
+    organizeResults();
   }
 
   function patchResultsRenderer() {
