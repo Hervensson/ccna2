@@ -1,12 +1,14 @@
 (function () {
   const BANK = window.CCNA_QUESTIONS || [];
-  const VERSION = `ccna-srwe-${BANK.length}-v5`;
+  const VERSION_PREFIX = `ccna-srwe-${BANK.length}-`;
+  const FALLBACK_VERSION = `${VERSION_PREFIX}v3`;
   const SESSION_KEY = "ccnaSrweExamSession";
+  const RESUME_KEY = "ccnaSrweOpenSession";
 
   const readSession = () => {
     try {
       const saved = JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
-      return saved && saved.version === VERSION ? saved : null;
+      return saved && String(saved.version || "").startsWith(VERSION_PREFIX) ? saved : null;
     } catch {
       return null;
     }
@@ -36,9 +38,39 @@
         window.createSession(ids, "training");
         window.renderExam();
         setTimeout(renderTrainingFeedback, 80);
+        return;
       }
+      createStandaloneTrainingSession(ids);
+      try {
+        sessionStorage.setItem(RESUME_KEY, "1");
+      } catch {}
+      window.location.href = `${window.location.pathname}?v=21&resume=1`;
     });
     start.insertAdjacentElement("afterend", button);
+  }
+
+  function createStandaloneTrainingSession(ids) {
+    const picked = ids.map((id) => BANK.find((question) => question.id === id)).filter(Boolean);
+    const saved = readSession();
+    const version = saved?.version || FALLBACK_VERSION;
+    const session = {
+      version,
+      mode: "training",
+      createdAt: Date.now(),
+      deadline: Date.now() + 75 * 60 * 1000,
+      current: 0,
+      submitted: false,
+      submittedAt: null,
+      historySaved: false,
+      items: picked.map((question) => ({
+        id: question.id,
+        optionOrder: question.type === "study" ? [] : shuffle((question.options || []).map((_, index) => index)),
+        answer: [],
+        matchingAnswer: {},
+        note: "",
+      })),
+    };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
   }
 
   function currentEntry() {
@@ -84,7 +116,7 @@
     };
   }
 
-  function markChoices(question, item) {
+  function markChoices(question, item, result) {
     document.querySelectorAll(".choice").forEach((button, displayIndex) => {
       const originalIndex = item.optionOrder?.[displayIndex];
       const selected = item.answer?.includes(displayIndex);
@@ -108,7 +140,7 @@
     const entry = currentEntry();
     if (!entry || !isAnswered(entry.question, entry.item)) return;
     const result = evaluate(entry.question, entry.item);
-    markChoices(entry.question, entry.item);
+    markChoices(entry.question, entry.item, result);
 
     const panel = document.createElement("section");
     panel.id = "trainingFeedback";
