@@ -1,4 +1,5 @@
 (function () {
+
   const BANK = window.CCNA_QUESTIONS || [];
   const byId = new Map(BANK.map((question) => [question.id, question]));
   const keys = {
@@ -13,7 +14,7 @@
     { label: "EtherChannel", tests: ["etherchannel", "lacp", "pagp"] },
     { label: "WLAN", tests: ["wlan", "sans fil", "wireless"] },
     { label: "Routage IPv6", tests: ["ipv6", "routage"] },
-    { label: "Securite LAN", tests: ["securite", "securite lan", "port security", "dhcp snooping"] },
+    { label: "Securite LAN", tests: ["securite", "securite", "port security", "dhcp snooping"] },
   ];
 
   const read = (key, fallback) => {
@@ -24,6 +25,9 @@
     }
   };
 
+  const difficultIds = () => read(keys.difficult, []).filter((id) => byId.has(id));
+  const lastErrors = () => read(keys.errors, []).filter((id) => byId.has(id));
+  const history = () => read(keys.history, []);
   const write = (key, value) => {
     try {
       localStorage.setItem(key, JSON.stringify(value));
@@ -31,10 +35,6 @@
       // Ignore storage failures.
     }
   };
-
-  const difficultIds = () => read(keys.difficult, []).filter((id) => byId.has(id));
-  const lastErrors = () => read(keys.errors, []).filter((id) => byId.has(id));
-  const history = () => read(keys.history, []);
 
   function normalize(value) {
     return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -89,6 +89,7 @@
       row.total += 1;
       row.correct += entry.correct ? 1 : 0;
       row.wrong += entry.correct ? 0 : 1;
+      row.percent = row.total ? Math.round((row.correct / row.total) * 100) : 0;
     });
     return [...totals.values()].map((row) => ({
       ...row,
@@ -131,16 +132,6 @@
     return aggregateThemes().find((row) => row.total >= 2 && row.wrong > 0)?.theme || "";
   }
 
-  function bindGoalInput() {
-    const input = document.querySelector("#scoreGoalInput");
-    if (!input) return;
-    input.addEventListener("change", () => {
-      write(keys.goal, Number(input.value) || 85);
-      renderDashboard();
-      renderThemeCharts();
-    });
-  }
-
   function renderDashboard() {
     const panel = document.querySelector("#learningDashboard");
     if (!panel) return;
@@ -169,6 +160,51 @@
     bindGoalInput();
   }
 
+  function renderHomeIntro() {
+    const actions = document.querySelector(".start-actions");
+    if (!actions || document.querySelector("#homeIntro")) return;
+    const intro = document.createElement("section");
+    intro.id = "homeIntro";
+    intro.className = "home-intro";
+    intro.innerHTML = `
+      <div class="home-intro-card">
+        <span>Session examen</span>
+        <strong>70 questions</strong>
+        <p>Une selection differente a chaque nouvelle session.</p>
+      </div>
+      <div class="home-intro-card">
+        <span>Temps Cisco</span>
+        <strong>1h15</strong>
+        <p>Un mode entrainement proche de NetAcad.</p>
+      </div>
+      <div class="home-intro-card">
+        <span>Correction</span>
+        <strong>A la fin</strong>
+        <p>Erreurs, fiches et themes faibles apres soumission.</p>
+      </div>
+    `;
+    actions.before(intro);
+  }
+
+  function bindGoalInput() {
+    const input = document.querySelector("#scoreGoalInput");
+    if (!input) return;
+    input.addEventListener("change", () => {
+      write(keys.goal, Number(input.value) || 85);
+      renderDashboard();
+      renderThemeCharts();
+    });
+  }
+
+  function deleteHistoryEntry(id) {
+    write(keys.history, history().filter((entry) => entry.id !== id));
+    renderDashboard();
+    renderGlobalStats();
+    renderThemeCharts();
+    renderRevisionCards();
+    renderEnhancedHistory();
+  }
+
   function sectionTitle(text) {
     const title = document.createElement("h2");
     title.className = "section-title";
@@ -181,7 +217,7 @@
       const percent = row.total ? Math.round((row.correct / row.total) * 100) : 0;
       return `
         <div class="theme-row">
-          <strong>${escapeHtml(row.theme)}</strong>
+          <strong>${row.theme}</strong>
           <span class="mini-bar"><i style="width:${percent}%"></i></span>
           <span>${row.correct}/${row.total} - ${percent}%</span>
         </div>
@@ -441,6 +477,7 @@
 
   function decorateResults() {
     saveDetailedSessionGroups();
+    renderHomeIntro();
     renderGlobalStats();
     renderThemeCharts();
     renderRevisionCards();
