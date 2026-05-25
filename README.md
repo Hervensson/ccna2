@@ -4,7 +4,7 @@ Site de révision interactif pour CCNA 2 SRWE.
 
 ## Accès
 
-Lien GitHub Pages prévu : https://hervensson.github.io/ccna2-srwe-revisions/
+Lien GitHub Pages prévu : https://hervensson.github.io/ccna2/
 
 Si le lien n'est pas encore actif, active GitHub Pages dans :
 
