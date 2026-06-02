@@ -15,6 +15,6 @@
   showHomeOnLaunch(); document.addEventListener("DOMContentLoaded", showHomeOnLaunch); setTimeout(showHomeOnLaunch, 80); setTimeout(showHomeOnLaunch, 350);
 })();
 (function loadExamTracking() {
-  if (!document.querySelector('link[href*="exam-tracking.css"]')) { const style=document.createElement("link"); style.rel="stylesheet"; style.href="exam-tracking.css?v=33"; style.dataset.examTracking="true"; document.head.append(style); }
-  if (!document.querySelector('script[src*="exam-tracking.js"]')) { const script=document.createElement("script"); script.src="exam-tracking.js?v=33"; script.dataset.examTracking="true"; document.body.append(script); }
+  if (!document.querySelector('link[href*="exam-tracking.css"]')) { const style=document.createElement("link"); style.rel="stylesheet"; style.href="exam-tracking.css?v=34"; style.dataset.examTracking="true"; document.head.append(style); }
+  if (!document.querySelector('script[src*="exam-tracking.js"]')) { const script=document.createElement("script"); script.src="exam-tracking.js?v=34"; script.dataset.examTracking="true"; document.body.append(script); }
 })();
