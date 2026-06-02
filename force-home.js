@@ -32,16 +32,16 @@
 })();
 
 (function loadExamTracking() {
-  if (!document.querySelector("link[data-exam-tracking]")) {
+  if (!document.querySelector('link[href*="exam-tracking.css"]')) {
     const style = document.createElement("link");
     style.rel = "stylesheet";
-    style.href = "exam-tracking.css?v=29";
+    style.href = "exam-tracking.css?v=30";
     style.dataset.examTracking = "true";
     document.head.append(style);
   }
-  if (!document.querySelector("script[data-exam-tracking]")) {
+  if (!document.querySelector('script[src*="exam-tracking.js"]')) {
     const script = document.createElement("script");
-    script.src = "exam-tracking.js?v=29";
+    script.src = "exam-tracking.js?v=30";
     script.dataset.examTracking = "true";
     document.body.append(script);
   }
