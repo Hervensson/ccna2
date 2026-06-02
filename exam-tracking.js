@@ -53,7 +53,7 @@
     stored.total = Math.max(Number(stored.total) || 0, history.length);
 
     const createdAt = progress.session?.createdAt;
-    if (createdAt && !stored.seen[createdAt]) {
+    if (createdAt && !progress.session.submitted && !stored.seen[createdAt]) {
       stored.seen[createdAt] = true;
       stored.total += 1;
     }
