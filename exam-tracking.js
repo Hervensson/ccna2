@@ -3,6 +3,7 @@
     session: "ccnaSrweExamSession",
     history: "ccnaSrweScoreHistory",
     attempts: "ccnaSrweAttemptStats",
+    bankCoverage: "ccnaSrweBankCoverage",
   };
 
   const read = (key, fallback) => {
@@ -62,6 +63,28 @@
     return { total: stored.total, progress };
   }
 
+  function coverageStats() {
+    const bank = window.CCNA_QUESTIONS || [];
+    const validIds = new Set(bank.map((question) => question.id));
+    const history = read(keys.history, []);
+    const progress = sessionProgress();
+    const stored = read(keys.bankCoverage, { seenIds: [] });
+    const seen = new Set((stored.seenIds || []).filter((id) => validIds.has(id)));
+
+    // Older versions did not save every question ID. Recover the IDs that are
+    // still available, then keep an exact record for every session from now on.
+    history.forEach((entry) => (entry.wrongIds || []).forEach((id) => seen.add(id)));
+    (progress.session?.items || []).forEach((item) => seen.add(item.id));
+
+    const seenIds = [...seen].filter((id) => validIds.has(id));
+    write(keys.bankCoverage, { seenIds });
+    return {
+      total: bank.length,
+      seen: seenIds.length,
+      unseen: Math.max(0, bank.length - seenIds.length),
+    };
+  }
+
   function card(label, value, tone = "") {
     const node = document.createElement("div");
     node.className = `tracking-card ${tone}`.trim();
@@ -81,20 +104,23 @@
     }
 
     const { total, progress } = attemptStats();
+    const coverage = coverageStats();
     panel.innerHTML = "";
     panel.append(card("Tentatives", total));
+    panel.append(card("Banque exploree", `${coverage.seen}/${coverage.total}`, coverage.unseen ? "" : "complete"));
+    panel.append(card("Questions inedites", coverage.unseen, coverage.unseen ? "warning" : "complete"));
     if (progress.total) {
-      panel.append(card("Session sauvegardee", `${progress.done}/${progress.total}`, progress.remaining ? "" : "complete"));
-      panel.append(card("Restantes", progress.remaining, progress.remaining ? "warning" : "complete"));
+      panel.append(card("Session en cours", `${progress.done}/${progress.total} repondues`, progress.remaining ? "" : "complete"));
     } else {
-      panel.append(card("Progression", "Aucune session en cours"));
+      panel.append(card("Session en cours", "Aucune"));
     }
   }
 
   function renderExam() {
     const stats = document.querySelector("#examShell .exam-stats");
     if (!stats) return;
-    const { total, progress } = attemptStats();
+    const { progress } = attemptStats();
+    const coverage = coverageStats();
     let panel = document.querySelector("#trackingExamStats");
     if (!panel) {
       panel = document.createElement("div");
@@ -114,8 +140,8 @@
         <strong>${progress.remaining}</strong>
       </div>
       <div class="tracking-mini">
-        <span>Tentatives</span>
-        <strong>${total}</strong>
+        <span>Banque vue</span>
+        <strong>${coverage.seen}/${coverage.total}</strong>
       </div>
     `;
   }
