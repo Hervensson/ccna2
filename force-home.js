@@ -35,13 +35,13 @@
   if (!document.querySelector('link[href*="exam-tracking.css"]')) {
     const style = document.createElement("link");
     style.rel = "stylesheet";
-    style.href = "exam-tracking.css?v=30";
+    style.href = "exam-tracking.css?v=31";
     style.dataset.examTracking = "true";
     document.head.append(style);
   }
   if (!document.querySelector('script[src*="exam-tracking.js"]')) {
     const script = document.createElement("script");
-    script.src = "exam-tracking.js?v=30";
+    script.src = "exam-tracking.js?v=31";
     script.dataset.examTracking = "true";
     document.body.append(script);
   }
