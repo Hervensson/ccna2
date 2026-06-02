@@ -30,3 +30,19 @@
   setTimeout(showHomeOnLaunch, 80);
   setTimeout(showHomeOnLaunch, 350);
 })();
+
+(function loadExamTracking() {
+  if (!document.querySelector("link[data-exam-tracking]")) {
+    const style = document.createElement("link");
+    style.rel = "stylesheet";
+    style.href = "exam-tracking.css?v=29";
+    style.dataset.examTracking = "true";
+    document.head.append(style);
+  }
+  if (!document.querySelector("script[data-exam-tracking]")) {
+    const script = document.createElement("script");
+    script.src = "exam-tracking.js?v=29";
+    script.dataset.examTracking = "true";
+    document.body.append(script);
+  }
+})();
