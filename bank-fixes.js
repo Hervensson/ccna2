@@ -108,4 +108,28 @@
     const fix = fixes.get(question.id);
     if (fix) Object.assign(question, fix);
   });
+  try {
+    const sessionKey = "ccnaSrweExamSession";
+    const saved = JSON.parse(localStorage.getItem(sessionKey) || "null");
+    let changed = false;
+    (saved?.items || []).forEach((item) => {
+      const fix = fixes.get(item.id);
+      if (!fix) return;
+      const question = bank.find((entry) => entry.id === item.id);
+      const order = item.optionOrder || [];
+      const validOrder = order.length === question.options.length
+        && new Set(order).size === order.length
+        && order.every((index) => index >= 0 && index < question.options.length);
+      if (validOrder) return;
+      item.optionOrder = question.options.map((_, index) => index);
+      item.answer = [];
+      item.matchingAnswer = {};
+      item.note = "";
+      changed = true;
+    });
+    if (changed) localStorage.setItem(sessionKey, JSON.stringify(saved));
+  } catch {
+    // The corrected bank remains usable when storage is unavailable.
+  }
+
 })();
