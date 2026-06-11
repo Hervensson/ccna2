@@ -23,6 +23,22 @@
     return copy;
   }
 
+  function startCorrectionSession(size = 70) {
+    const count = Math.min(size, BANK.length);
+    const ids = shuffle(BANK).slice(0, count).map((question) => question.id);
+    if (typeof window.createSession === "function" && typeof window.renderExam === "function") {
+      window.createSession(ids, "training");
+      window.renderExam();
+      setTimeout(renderTrainingFeedback, 80);
+      return;
+    }
+    createStandaloneTrainingSession(ids);
+    try {
+      sessionStorage.setItem(RESUME_KEY, "1");
+    } catch {}
+    window.location.href = `${window.location.pathname}?v=41&resume=1`;
+  }
+
   function addTrainingButton() {
     if (document.querySelector("#trainingModeBtn")) return;
     const start = document.querySelector("#startBtn");
@@ -31,21 +47,8 @@
     button.id = "trainingModeBtn";
     button.type = "button";
     button.className = "training-action";
-    button.textContent = "Mode entrainement";
-    button.addEventListener("click", () => {
-      const ids = shuffle(BANK).slice(0, Math.min(20, BANK.length)).map((question) => question.id);
-      if (typeof window.createSession === "function" && typeof window.renderExam === "function") {
-        window.createSession(ids, "training");
-        window.renderExam();
-        setTimeout(renderTrainingFeedback, 80);
-        return;
-      }
-      createStandaloneTrainingSession(ids);
-      try {
-        sessionStorage.setItem(RESUME_KEY, "1");
-      } catch {}
-      window.location.href = `${window.location.pathname}?v=24&resume=1`;
-    });
+    button.textContent = "Revision avec correction";
+    button.addEventListener("click", () => startCorrectionSession(70));
     start.insertAdjacentElement("afterend", button);
   }
 
@@ -116,7 +119,7 @@
     };
   }
 
-  function markChoices(question, item, result) {
+  function markChoices(question, item) {
     document.querySelectorAll(".choice").forEach((button, displayIndex) => {
       const originalIndex = item.optionOrder?.[displayIndex];
       const selected = item.answer?.includes(displayIndex);
@@ -138,9 +141,15 @@
   function renderTrainingFeedback() {
     document.querySelector("#trainingFeedback")?.remove();
     const entry = currentEntry();
+    const modeLine = document.querySelector("#sessionMode");
+    if (entry && modeLine) {
+      modeLine.textContent = "Mode revision avec correction immediate : la bonne reponse apparait apres ta reponse.";
+    }
+    const submit = document.querySelector("#submitBtn");
+    if (entry && submit) submit.textContent = "Terminer";
     if (!entry || !isAnswered(entry.question, entry.item)) return;
     const result = evaluate(entry.question, entry.item);
-    markChoices(entry.question, entry.item, result);
+    markChoices(entry.question, entry.item);
 
     const panel = document.createElement("section");
     panel.id = "trainingFeedback";
@@ -149,7 +158,11 @@
       <strong>${result.manual ? "Compare avec la correction" : result.correct ? "Bonne reponse" : "A revoir"}</strong>
       <p class="answer-line">Bonne reponse : ${escapeHtml(result.answerText || "Voir la correction finale.")}</p>
       <p>${escapeHtml(entry.question.explanation || "Le document source ne donne pas plus d'explication pour cette question.")}</p>
+      <button type="button" class="training-next">Question suivante</button>
     `;
+    panel.querySelector(".training-next")?.addEventListener("click", () => {
+      document.querySelector("#nextBtn")?.click();
+    });
     document.querySelector("#answerArea")?.append(panel);
   }
 
@@ -186,6 +199,7 @@
     renderTrainingFeedback();
   }
 
+  window.startCorrectionSession = startCorrectionSession;
   document.addEventListener("DOMContentLoaded", run);
   patchQuestionChanges();
   run();
