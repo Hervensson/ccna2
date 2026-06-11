@@ -11,6 +11,30 @@
   background: #57d68d;
 }
 
+.correction-size-field {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--muted);
+  background: rgba(147, 165, 189, 0.09);
+  font-weight: 900;
+}
+
+.correction-size-field select {
+  min-width: 78px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--text);
+  background: #101927;
+  font-weight: 900;
+}
+
 .training-feedback {
   display: grid;
   gap: 8px;
