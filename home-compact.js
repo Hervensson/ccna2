@@ -124,10 +124,25 @@
     controls.innerHTML = `
       ${active ? '<button type="button" class="continue-action" data-compact-continue>Continuer ma session</button>' : ""}
       <button type="button" class="primary-action" data-compact-new>Nouvelle session</button>
+      <label class="correction-size-field">Questions
+        <select data-compact-correction-size>
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="30">30</option>
+          <option value="50">50</option>
+          <option value="70">70</option>
+        </select>
+      </label>
       <button type="button" class="correction-action" data-compact-correction>Revision avec correction</button>
       <button type="button" data-compact-themes>Choisir mes themes</button>
       <button type="button" data-compact-quick>Revision rapide - 20 questions</button>
     `;
+    const correctionSize = controls.querySelector("[data-compact-correction-size]");
+    const savedSize = typeof window.getCorrectionSessionSize === "function" ? window.getCorrectionSessionSize() : 20;
+    if (correctionSize) correctionSize.value = ["10", "20", "30", "50", "70"].includes(String(savedSize)) ? String(savedSize) : "20";
+    correctionSize?.addEventListener("change", () => {
+      if (typeof window.saveCorrectionSessionSize === "function") window.saveCorrectionSessionSize(Number(correctionSize.value));
+    });
     controls.querySelector("[data-compact-continue]")?.addEventListener("click", openCurrentSession);
     controls.querySelector("[data-compact-new]").addEventListener("click", () => {
       if (!confirmReplacement()) return;
@@ -135,8 +150,9 @@
     });
     controls.querySelector("[data-compact-correction]")?.addEventListener("click", () => {
       if (!confirmReplacement()) return;
-      if (typeof window.startCorrectionSession === "function") window.startCorrectionSession(70);
-      else launchMixed(70);
+      const size = Number(correctionSize?.value || 20);
+      if (typeof window.startCorrectionSession === "function") window.startCorrectionSession(size);
+      else launchMixed(size);
     });
     controls.querySelector("[data-compact-themes]").addEventListener("click", openThemeModal);
     controls.querySelector("[data-compact-quick]").addEventListener("click", () => {
