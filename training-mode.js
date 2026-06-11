@@ -4,6 +4,7 @@
   const FALLBACK_VERSION = `${VERSION_PREFIX}v3`;
   const SESSION_KEY = "ccnaSrweExamSession";
   const RESUME_KEY = "ccnaSrweOpenSession";
+  const CORRECTION_SIZE_KEY = "ccnaSrweCorrectionSize";
 
   const readSession = () => {
     try {
@@ -23,8 +24,36 @@
     return copy;
   }
 
-  function startCorrectionSession(size = 70) {
-    const count = Math.min(size, BANK.length);
+  function correctionSize(defaultValue = 20) {
+    try {
+      const value = Number(localStorage.getItem(CORRECTION_SIZE_KEY));
+      return Number.isFinite(value) && value > 0 ? Math.min(value, BANK.length) : defaultValue;
+    } catch {
+      return defaultValue;
+    }
+  }
+
+  function saveCorrectionSize(size) {
+    try {
+      localStorage.setItem(CORRECTION_SIZE_KEY, String(size));
+    } catch {}
+  }
+
+  function askCorrectionSize() {
+    const current = correctionSize();
+    const answer = prompt(`Combien de questions pour cette revision ?`, String(current));
+    if (answer === null) return null;
+    const value = Number(answer);
+    if (!Number.isFinite(value) || value < 1) {
+      alert("Choisis un nombre valide.");
+      return null;
+    }
+    return Math.min(Math.round(value), BANK.length);
+  }
+
+  function startCorrectionSession(size = correctionSize()) {
+    const count = Math.min(Math.max(Number(size) || correctionSize(), 1), BANK.length);
+    saveCorrectionSize(count);
     const ids = shuffle(BANK).slice(0, count).map((question) => question.id);
     if (typeof window.createSession === "function" && typeof window.renderExam === "function") {
       window.createSession(ids, "training");
@@ -36,7 +65,7 @@
     try {
       sessionStorage.setItem(RESUME_KEY, "1");
     } catch {}
-    window.location.href = `${window.location.pathname}?v=41&resume=1`;
+    window.location.href = `${window.location.pathname}?v=42&resume=1`;
   }
 
   function addTrainingButton() {
@@ -48,7 +77,10 @@
     button.type = "button";
     button.className = "training-action";
     button.textContent = "Revision avec correction";
-    button.addEventListener("click", () => startCorrectionSession(70));
+    button.addEventListener("click", () => {
+      const size = askCorrectionSize();
+      if (size) startCorrectionSession(size);
+    });
     start.insertAdjacentElement("afterend", button);
   }
 
@@ -119,7 +151,7 @@
     };
   }
 
-  function markChoices(question, item) {
+  function markChoices(question, item, result) {
     document.querySelectorAll(".choice").forEach((button, displayIndex) => {
       const originalIndex = item.optionOrder?.[displayIndex];
       const selected = item.answer?.includes(displayIndex);
@@ -149,7 +181,7 @@
     if (entry && submit) submit.textContent = "Terminer";
     if (!entry || !isAnswered(entry.question, entry.item)) return;
     const result = evaluate(entry.question, entry.item);
-    markChoices(entry.question, entry.item);
+    markChoices(entry.question, entry.item, result);
 
     const panel = document.createElement("section");
     panel.id = "trainingFeedback";
@@ -200,6 +232,8 @@
   }
 
   window.startCorrectionSession = startCorrectionSession;
+  window.getCorrectionSessionSize = correctionSize;
+  window.saveCorrectionSessionSize = saveCorrectionSize;
   document.addEventListener("DOMContentLoaded", run);
   patchQuestionChanges();
   run();
