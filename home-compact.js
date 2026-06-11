@@ -124,6 +124,7 @@
     controls.innerHTML = `
       ${active ? '<button type="button" class="continue-action" data-compact-continue>Continuer ma session</button>' : ""}
       <button type="button" class="primary-action" data-compact-new>Nouvelle session</button>
+      <button type="button" class="correction-action" data-compact-correction>Revision avec correction</button>
       <button type="button" data-compact-themes>Choisir mes themes</button>
       <button type="button" data-compact-quick>Revision rapide - 20 questions</button>
     `;
@@ -131,6 +132,11 @@
     controls.querySelector("[data-compact-new]").addEventListener("click", () => {
       if (!confirmReplacement()) return;
       launchMixed(70);
+    });
+    controls.querySelector("[data-compact-correction]")?.addEventListener("click", () => {
+      if (!confirmReplacement()) return;
+      if (typeof window.startCorrectionSession === "function") window.startCorrectionSession(70);
+      else launchMixed(70);
     });
     controls.querySelector("[data-compact-themes]").addEventListener("click", openThemeModal);
     controls.querySelector("[data-compact-quick]").addEventListener("click", () => {
