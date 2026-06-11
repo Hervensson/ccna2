@@ -4,6 +4,13 @@
   border-color: transparent;
 }
 
+.compact-home-controls .correction-action,
+.training-action {
+  color: #061016;
+  border-color: #57d68d;
+  background: #57d68d;
+}
+
 .training-feedback {
   display: grid;
   gap: 8px;
@@ -36,6 +43,16 @@
 
 .training-feedback .answer-line {
   color: var(--good);
+  font-weight: 900;
+}
+
+.training-next {
+  justify-self: start;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 6px;
+  color: #061016;
+  background: var(--accent);
   font-weight: 900;
 }
 
